@@ -9,9 +9,12 @@ from telegram.ext import (
 )
 from openai import OpenAI
 
-# ====== ENV VARIABLES ======
-TELEGRAM_TOKEN = os.environ.get("8648455166:AAEYGHn7DshRjK8YMeJUDf1Z2UtbGgrcbCQ")
-OPENAI_API_KEY = os.environ.get("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")
+# =========================
+# 🔴 এখানে তোমার তথ্য বসাও
+# =========================
+TELEGRAM_TOKEN = "8648455166:AAEYGHn7DshRjK8YMeJUDf1Z2UtbGgrcbCQ"
+OPENAI_API_KEY = "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"
+# =========================
 
 # ====== GROQ CLIENT ======
 client = OpenAI(
@@ -19,28 +22,29 @@ client = OpenAI(
     base_url="https://api.groq.com/openai/v1"
 )
 
-# ====== DEFAULT MODE ======
-user_modes = {}  # user_id: "soft" / "demon"
+# ====== USER MODE STORAGE ======
+user_modes = {}
 
 
 # ====== START COMMAND ======
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text(
-        "মুরুব্বি 🧔‍♂️ হাজির।\n"
-        "Mode change করতে লিখো:\n"
-        "/soft অথবা /demon"
+        "🧔‍♂️ মুরুব্বি হাজির!\n\n"
+        "/soft – হালকা ব্যঙ্গ\n"
+        "/demon – নির্মম রোস্ট\n\n"
+        "কিছু লিখে দেখ।"
     )
 
 
 # ====== MODE COMMANDS ======
 async def soft_mode(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_modes[update.effective_user.id] = "soft"
-    await update.message.reply_text("Soft roast mode চালু 😌")
+    await update.message.reply_text("😌 Soft mode চালু হয়েছে।")
 
 
 async def demon_mode(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_modes[update.effective_user.id] = "demon"
-    await update.message.reply_text("Demon roast mode চালু 😈")
+    await update.message.reply_text("😈 Demon mode চালু হয়েছে।")
 
 
 # ====== MESSAGE HANDLER ======
@@ -52,20 +56,18 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     if level == "demon":
         system_prompt = """
-        You are 'মুরুব্বি', a cold ruthless Bengali roast master.
-        Speak only Bengali.
-        Short brutal lines.
-        No kindness.
-        No vulgar abuse.
-        Make it psychologically sharp.
-        """
+তুমি 'মুরুব্বি'।
+ঠান্ডা, নির্মম, সংক্ষিপ্ত ব্যঙ্গ করবে।
+১-২ লাইনে শেষ করবে।
+কোনো অশ্লীল গালি ব্যবহার করবে।
+"""
     else:
         system_prompt = """
-        You are 'মুরুব্বি', a witty sarcastic Bengali guru.
-        Speak only Bengali.
-        Short sharp roast.
-        No vulgar abuse.
-        """
+তুমি 'মুরুব্বি'।
+বুদ্ধিদীপ্ত, সংক্ষিপ্ত, মজাদার ব্যঙ্গ করবে।
+১-২ লাইনে শেষ করবে।
+গালি ব্যবহার করবে।
+"""
 
     try:
         response = client.chat.completions.create(
@@ -75,17 +77,18 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 {"role": "user", "content": user_message},
             ],
             temperature=0.9,
+            max_tokens=150,
         )
 
-        reply = response.choices[0].message.content
+        reply = response.choices[0].message.content.strip()
         await update.message.reply_text(reply)
 
     except Exception as e:
         print("Error:", e)
-        await update.message.reply_text("আজ মুরুব্বির মুড অফ 😑")
+        await update.message.reply_text("আজ মুরুব্বির মুড ভালো না 😑")
 
 
-# ====== MAIN FUNCTION ======
+# ====== MAIN ======
 def main():
     app = ApplicationBuilder().token(TELEGRAM_TOKEN).build()
 
